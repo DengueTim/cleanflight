@@ -61,6 +61,7 @@
 #include "rx/rx_spi.h"
 #include "rx/targetcustomserial.h"
 
+#include "snatch/snatch.h"
 
 //#define DEBUG_RX_SIGNAL_LOSS
 
@@ -186,7 +187,7 @@ void resetAllRxChannelRangeConfigurations(rxChannelRangeConfig_t *rxChannelRange
     }
 }
 
-static uint16_t nullReadRawRC(const rxRuntimeConfig_t *rxRuntimeConfig, uint8_t channel)
+uint16_t nullReadRawRC(const rxRuntimeConfig_t *rxRuntimeConfig, uint8_t channel)
 {
     UNUSED(rxRuntimeConfig);
     UNUSED(channel);
@@ -284,6 +285,12 @@ bool serialRxInit(const rxConfig_t *rxConfig, rxRuntimeConfig_t *rxRuntimeConfig
         enabled = false;
         break;
     }
+#ifdef SNATCH
+    if (feature(FEATURE_SNATCH)) {
+        // Uses the current value of rcReadRawFunc as a fall back.
+        snatchInit(rxConfig, rxRuntimeConfig);
+    }
+#endif
     return enabled;
 }
 #endif
@@ -421,7 +428,12 @@ bool rxUpdateCheck(timeUs_t currentTimeUs, timeDelta_t currentDeltaTime)
 #endif
     {
         rxDataReceived = false;
-        const uint8_t frameStatus = rxRuntimeConfig.rcFrameStatusFn();
+        uint8_t frameStatus = rxRuntimeConfig.rcFrameStatusFn();
+#ifdef SNATCH
+        if (feature(FEATURE_SNATCH)) {
+        	frameStatus = snatchFrameStatus(currentTimeUs, frameStatus);
+        }
+#endif
         if (frameStatus & RX_FRAME_COMPLETE) {
             rxDataReceived = true;
             rxIsInFailsafeMode = (frameStatus & RX_FRAME_FAILSAFE) != 0;

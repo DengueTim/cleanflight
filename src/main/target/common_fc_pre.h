@@ -43,6 +43,7 @@
 #define MINIMAL_CLI
 #define USE_DSHOT
 #define USE_GYRO_DATA_ANALYSE
+#define SNATCH
 #endif
 
 #ifdef STM32F4
@@ -51,6 +52,7 @@
 #define I2C3_OVERCLOCK true
 #define TELEMETRY_IBUS
 #define USE_GYRO_DATA_ANALYSE
+#define SNATCH
 #endif
 
 #ifdef STM32F7

@@ -74,6 +74,8 @@
 
 #include "telemetry/telemetry.h"
 
+#include "snatch/snatch.h"
+
 #include "flight/altitude.h"
 #include "flight/failsafe.h"
 #include "flight/imu.h"
@@ -595,6 +597,12 @@ static void subTaskMainSubprocesses(timeUs_t currentTimeUs)
     }
 #else
     UNUSED(currentTimeUs);
+#endif
+
+#ifdef SNATCH
+    if (!cliMode && feature(FEATURE_SNATCH)) {
+    	snatchSendPidLoopEvent(currentTimeUs);
+    }
 #endif
 
 #ifdef TRANSPONDER
